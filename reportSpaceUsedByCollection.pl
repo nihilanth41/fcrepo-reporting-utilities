@@ -9,6 +9,8 @@ use XML::LibXML;
 use Config::Tiny;
 use Data::Dump;
 
+use Scalar::Util qw(looks_like_number);
+
 if ( $#ARGV != 0 ) {
     print "\n Usage is $0 <collection pid> \n\n";
     exit(8);
@@ -82,7 +84,24 @@ foreach my $line (@pidNumberCollectionSearchStringEncodeCurlCommand) {
     $line =~ s#$nameSpace:##g;
     push( @pidsInCollection, $line );
 }
-my @sortedPidsInCollection = sort { $a <=> $b; } @pidsInCollection;
+
+my @numericPids = ();
+my @nonNumericPids = ();
+@numericPids = grep{&isNumeric($_)} @pidsInCollection;
+@nonNumericPids = grep{!(&isNumeric($_))} @pidsInCollection;
+
+print "Numeric PIDS: \n";
+foreach(@numericPids) {
+	print $_, "\n";
+}
+
+print "Non-numeric PIDS: \n";
+foreach(@nonNumericPids) {
+	print $_, "\n";
+}
+
+my @sortedPidsInCollection = sort { $a <=> $b; } @numericPids;
+#my @sortedPidsInCollection = sort { $a <=> $b; } @pidsInCollection;
 
 foreach my $line (@sortedPidsInCollection) {
     chomp $line;
@@ -134,3 +153,13 @@ print "\n  Space Used: ";
         print "$sum bytes\n";
     }
 print "  Number of Datastreams: $countPid\n";
+
+# input: $string to check numeric
+# output: true or false depending on looks_like_number
+sub isNumeric {
+	my $s = shift;
+	if($s =~ m/\d+/g) {
+		return 1;
+	}
+	return 0;
+}

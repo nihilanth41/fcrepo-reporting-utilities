@@ -18,6 +18,8 @@ if ( $#ARGV != 0 ) {
 #TODO check if item in collection is a collection
 #TODO report nested collection space used
 
+
+
 my $collectionPid = $ARGV[0];
 chomp $collectionPid;
 
@@ -30,6 +32,11 @@ my $username = $config->{settings}->{username};
 my $password = $config->{settings}->{password};
 
 my $fedoraURI = $server_name . ":" . $port . "/" . $fedora_context;
+
+my @subcoll = &get_child_collections($collectionPid, $fedoraURI);
+foreach(@subcoll) {
+	print $_, "\n"; 
+}
 
 ## calculate space used by collection PID
 my $collectionFoxml = qx(curl -s -u ${username}:$password -X GET "$fedoraURI/objects/$collectionPid/objectXML");      #print $collectionFoxml;
@@ -63,6 +70,7 @@ my @runningTotal;
 push( @runningTotal, $outputCollection );
 
 my ( $nameSpace, $pidNumber ) = split( /:/, $collectionPid );
+
 ##  get members of collection from SPARQL query
 my $pidNumberCollectionSearchString = 'select $object from <#ri> where {{ $object <fedora-rels-ext:isMemberOf> <info:fedora/'
   . $nameSpace . ':' . $pidNumber
@@ -134,3 +142,40 @@ print "\n  Space Used: ";
         print "$sum bytes\n";
     }
 print "  Number of Datastreams: $countPid\n";
+
+
+
+
+# PARAMS: 
+	# $collection_pid - Takes form of "namespace:pid" 
+# RETURNS: 
+	# SUCCESS: it returns a list of (unique) collections that are direct children $collection_pid
+	# FAILURE: returns an empty list
+sub get_child_collections()
+{
+	# (Empty) list to hold any child collections that are found.
+	my @child_collections = ();
+	# Get function parameter
+	my ($collection_pid, $fedoraURI) = @_;
+	if( !defined($collection_pid) || !defined($fedoraURI) ) {
+		return @child_collections; 
+	}
+	my ( $nameSpace, $pidNumber ) = split( /:/, $collectionPid );
+
+	# First thing -> get list of subcollections 
+	# I.e. for a given pid (e.g. islandora:root) find any collections that have property isMemberOfCollection <fedora/islandora:root>
+	my $collectionsInCollectionSearchString = 'select distinct $collection from <#ri> where {{ $collection <fedora-rels-ext:isMemberOfCollection> <info:fedora/'
+	. $nameSpace . ':' . $pidNumber
+	. '> . }}';
+	my $collectionsInCollectionSearchStringEncode = uri_escape($collectionsInCollectionSearchString);
+	my $query_uri = $fedoraURI . '/risearch?type=tuples&lang=sparql&format=CSV&dt=on&query=' .$collectionsInCollectionSearchStringEncode;
+	my @CurlCommand = `curl -s '$query_uri'`;
+	foreach my $line (@CurlCommand) {
+		# Ignore row[0] (table heading)
+		next if $line =~ m#^"collection"#;
+		chomp $line;
+		$line =~ s#info:fedora/##g;
+		push(@child_collections, $line);
+	}
+	return @child_collections;
+}

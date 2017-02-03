@@ -58,7 +58,7 @@ my $resultsCollection = $stylesheetCollection->transform($xmlCollection);
 my $outputCollection = $stylesheetCollection->output_string($resultsCollection);
 
 chomp $outputCollection;
-#print "$outputCollection\n";       # uncomment for verbose report
+print "$outputCollection\n";       # uncomment for verbose report
 my @runningTotal;
 push( @runningTotal, $outputCollection );
 
@@ -71,9 +71,11 @@ my $pidNumberCollectionSearchString = 'select $object from <#ri> where {{ $objec
   . '> . } UNION { $book <fedora-rels-ext:isMemberOfCollection> <info:fedora/'
   . $nameSpace . ':' . $pidNumber
   . '> . $object <fedora-rels-ext:isMemberOf> $book . }'
-  . ' UNION { $compound <fedora-rels-ext:isMemberOfCollection> <info:fedora/' 
+  . ' UNION { { $compound <fedora-rels-ext:isMemberOfCollection> <info:fedora/' 
   . $nameSpace . ':' . $pidNumber
-  . '> . $object <fedora-rels-ext:isConstituentOf> $compound . }} order by $object ';
+  . '> . $object <fedora-rels-ext:isConstituentOf> $compound . }'
+  . ' UNION { $book <fedora-rels-ext:isConstituentOf> $compound . $object <fedora-rels-ext:isMemberOf> $book . }}'
+  . '} order by $object ';
 print $pidNumberCollectionSearchString, "\n";
 my $pidNumberCollectionSearchStringEncode = uri_escape($pidNumberCollectionSearchString);
 my $query_uri = $fedoraURI . '/risearch?type=tuples&lang=sparql&format=CSV&dt=on&query=' .$pidNumberCollectionSearchStringEncode;
@@ -83,14 +85,16 @@ foreach my $line (@pidNumberCollectionSearchStringEncodeCurlCommand) {
     next if $line =~ m#^"object"#;
     chomp $line;
     $line =~ s#info:fedora/##g;
-    $line =~ s#$nameSpace:##g;
+    #$line =~ s#$nameSpace:##g;
     push( @pidsInCollection, $line );
 }
-my @sortedPidsInCollection = sort { $a <=> $b; } @pidsInCollection;
+#my @sortedPidsInCollection = sort { $a <=> $b; } @pidsInCollection;
 
-foreach my $line (@sortedPidsInCollection) {
+#foreach my $line (@sortedPidsInCollection) {
+foreach my $line (@pidsInCollection) {
     chomp $line;
-    my $pid = $nameSpace . ":" . $line; #    print "$pid\n";
+    my ($nameSpace, $pidNumber) = split( /:/, $line);
+    my $pid = $nameSpace . ":" . $pidNumber; #    print "$pid\n";
     my $foxml = qx(curl -s -u ${username}:$password -X GET "$fedoraURI/objects/$pid/objectXML");
     my $xml_parser  = XML::LibXML->new;
     my $xslt_parser = XML::LibXSLT->new;
@@ -102,7 +106,7 @@ foreach my $line (@sortedPidsInCollection) {
     my $output     = $stylesheet->output_string($results);
 
     chomp $output;
-    #print "$output\n";      # uncomment for verbose report
+    print "$output\n";      # uncomment for verbose report
     push( @runningTotal, $output );
 }
 my ( $pidCounter, $sum, $countPid );

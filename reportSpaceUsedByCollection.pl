@@ -70,7 +70,11 @@ my $pidNumberCollectionSearchString = 'select $object from <#ri> where {{ $objec
   . $nameSpace . ':' . $pidNumber
   . '> . } UNION { $book <fedora-rels-ext:isMemberOfCollection> <info:fedora/'
   . $nameSpace . ':' . $pidNumber
-  . '> . $object <fedora-rels-ext:isMemberOf> $book . }} order by $object ';
+  . '> . $object <fedora-rels-ext:isMemberOf> $book . }'
+  . ' UNION { $compound <fedora-rels-ext:isMemberOfCollection> <info:fedora/' 
+  . $nameSpace . ':' . $pidNumber
+  . '> . $object <fedora-rels-ext:isConstituentOf> $compound . }} order by $object ';
+print $pidNumberCollectionSearchString, "\n";
 my $pidNumberCollectionSearchStringEncode = uri_escape($pidNumberCollectionSearchString);
 my $query_uri = $fedoraURI . '/risearch?type=tuples&lang=sparql&format=CSV&dt=on&query=' .$pidNumberCollectionSearchStringEncode;
 my @pidNumberCollectionSearchStringEncodeCurlCommand = `curl -s '$query_uri'`;

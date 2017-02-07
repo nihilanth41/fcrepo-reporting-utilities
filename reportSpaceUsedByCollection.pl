@@ -67,6 +67,7 @@ my ( $nameSpace, $pidNumber ) = split( /:/, $collectionPid );
 my $pidNumberCollectionSearchString = 'select $object from <#ri> where {'
   . '{ $object <fedora-rels-ext:isMemberOfCollection> <info:fedora/' . $nameSpace . ':' . $pidNumber  . '> . } ' 
   . 'UNION { $book <fedora-rels-ext:isMemberOfCollection> <info:fedora/' . $nameSpace . ':' . $pidNumber . '> . $object <fedora-rels-ext:isMemberOf> $book . } '
+  . 'UNION { $collection <fedora-rels-ext:isMemberOfCollection> <info:fedora/' . $nameSpace . ':' . $pidNumber . '> . $book <fedora-rels-ext:isMemberOfCollection> $collection . $object <fedora-rels-ext:isMemberOf> $book . }'
   . 'UNION { $collection <fedora-rels-ext:isMemberOfCollection> <info:fedora/' . $nameSpace . ':' . $pidNumber . '> . $object <fedora-rels-ext:isMemberOfCollection> $collection . } '
   . 'UNION { $object <fedora-rels-ext:isConstituentOf> $collection . $collection <fedora-rels-ext:isMemberOfCollection> <info:fedora/' . $nameSpace . ':' . $pidNumber . '> . } '
   . 'UNION { $collection <fedora-rels-ext:isMemberOfCollection> <info:fedora/' . $nameSpace . ':' . $pidNumber . '> . $book <fedora-rels-ext:isConstituentOf> $collection . $object <fedora-rels-ext:isMemberOf> $book . }'

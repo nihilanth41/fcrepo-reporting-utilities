@@ -64,17 +64,12 @@ push( @runningTotal, $outputCollection );
 
 my ( $nameSpace, $pidNumber ) = split( /:/, $collectionPid );
 ##  get members of collection from SPARQL query
-my $pidNumberCollectionSearchString = 'select $object from <#ri> where {{ $object <fedora-rels-ext:isMemberOf> <info:fedora/'
-  . $nameSpace . ':' . $pidNumber
-  . '> . } UNION { $object <fedora-rels-ext:isMemberOfCollection> <info:fedora/'
-  . $nameSpace . ':' . $pidNumber
-  . '> . } UNION { $book <fedora-rels-ext:isMemberOfCollection> <info:fedora/'
-  . $nameSpace . ':' . $pidNumber
-  . '> . $object <fedora-rels-ext:isMemberOf> $book . }'
-  . ' UNION { { $compound <fedora-rels-ext:isMemberOfCollection> <info:fedora/' 
-  . $nameSpace . ':' . $pidNumber
-  . '> . $object <fedora-rels-ext:isConstituentOf> $compound . }'
-  . ' UNION { $book <fedora-rels-ext:isConstituentOf> $compound . $object <fedora-rels-ext:isMemberOf> $book . }}'
+my $pidNumberCollectionSearchString = 'select $object from <#ri> where {'
+  . '{ $object <fedora-rels-ext:isMemberOfCollection> <info:fedora/' . $nameSpace . ':' . $pidNumber  . '> . } ' 
+  . 'UNION { $book <fedora-rels-ext:isMemberOfCollection> <info:fedora/' . $nameSpace . ':' . $pidNumber . '> . $object <fedora-rels-ext:isMemberOf> $book . } '
+  . 'UNION { $collection <fedora-rels-ext:isMemberOfCollection> <info:fedora/' . $nameSpace . ':' . $pidNumber . '> . $object <fedora-rels-ext:isMemberOfCollection> $collection . } '
+  . 'UNION { $object <fedora-rels-ext:isConstituentOf> $collection . $collection <fedora-rels-ext:isMemberOfCollection> <info:fedora/' . $nameSpace . ':' . $pidNumber . '> . } '
+  . 'UNION { $collection <fedora-rels-ext:isMemberOfCollection> <info:fedora/' . $nameSpace . ':' . $pidNumber . '> . $book <fedora-rels-ext:isConstituentOf> $collection . $object <fedora-rels-ext:isMemberOf> $book . }'
   . '} order by $object ';
 print $pidNumberCollectionSearchString, "\n";
 my $pidNumberCollectionSearchStringEncode = uri_escape($pidNumberCollectionSearchString);

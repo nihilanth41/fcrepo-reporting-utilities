@@ -64,7 +64,12 @@ push( @runningTotal, $outputCollection );
 
 my ( $nameSpace, $pidNumber ) = split( /:/, $collectionPid );
 ##  get members of collection from SPARQL query
-my $pidNumberCollectionSearchString = 'select $object from <#ri> where {'
+# where obj is member of target collection
+# where obj is a member of a book that is a member of the target collection
+# where where obj is a member of book, and book is a member of a collection which is contained inside the target collection.
+# where obj is a member of a compound object that is contained inside the target collection
+# where obj is a member of a book, which is a member of a compound obj, which is a member of the target collection
+my $pidNumberCollectionSearchString = 'select DISTINCT $object from <#ri> where {'
   . '{ $object <fedora-rels-ext:isMemberOfCollection> <info:fedora/' . $nameSpace . ':' . $pidNumber  . '> . } ' 
   . 'UNION { $book <fedora-rels-ext:isMemberOfCollection> <info:fedora/' . $nameSpace . ':' . $pidNumber . '> . $object <fedora-rels-ext:isMemberOf> $book . } '
   . 'UNION { $collection <fedora-rels-ext:isMemberOfCollection> <info:fedora/' . $nameSpace . ':' . $pidNumber . '> . $book <fedora-rels-ext:isMemberOfCollection> $collection . $object <fedora-rels-ext:isMemberOf> $book . } '

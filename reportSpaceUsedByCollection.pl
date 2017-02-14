@@ -75,7 +75,7 @@ my $pidNumberCollectionSearchString = 'select $object from <#ri> where {'
 print $pidNumberCollectionSearchString, "\n";
 my $pidNumberCollectionSearchStringEncode = uri_escape($pidNumberCollectionSearchString);
 my $query_uri = $fedoraURI . '/risearch?type=tuples&lang=sparql&format=CSV&dt=on&query=' .$pidNumberCollectionSearchStringEncode;
-my @pidNumberCollectionSearchStringEncodeCurlCommand = `curl -s '$query_uri'`;
+my @pidNumberCollectionSearchStringEncodeCurlCommand = `curl -s -u ${username}:$password '$query_uri'`;
 my @pidsInCollection;
 foreach my $line (@pidNumberCollectionSearchStringEncodeCurlCommand) {
     next if $line =~ m#^"object"#;

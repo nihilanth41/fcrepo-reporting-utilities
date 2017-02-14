@@ -58,7 +58,7 @@ my $resultsCollection = $stylesheetCollection->transform($xmlCollection);
 my $outputCollection = $stylesheetCollection->output_string($resultsCollection);
 
 chomp $outputCollection;
-print "$outputCollection\n";       # uncomment for verbose report
+#print "$outputCollection\n";       # uncomment for verbose report
 my @runningTotal;
 push( @runningTotal, $outputCollection );
 
@@ -77,7 +77,7 @@ my $pidNumberCollectionSearchString = 'select DISTINCT $object from <#ri> where 
   . 'UNION { $object <fedora-rels-ext:isConstituentOf> $collection . $collection <fedora-rels-ext:isMemberOfCollection> <info:fedora/' . $nameSpace . ':' . $pidNumber . '> . } '
   . 'UNION { $collection <fedora-rels-ext:isMemberOfCollection> <info:fedora/' . $nameSpace . ':' . $pidNumber . '> . $book <fedora-rels-ext:isConstituentOf> $collection . $object <fedora-rels-ext:isMemberOf> $book . }'
   . '} order by $object ';
-print $pidNumberCollectionSearchString, "\n";
+#print $pidNumberCollectionSearchString, "\n";
 my $pidNumberCollectionSearchStringEncode = uri_escape($pidNumberCollectionSearchString);
 my $query_uri = $fedoraURI . '/risearch?type=tuples&lang=sparql&format=CSV&dt=on&query=' .$pidNumberCollectionSearchStringEncode;
 my @pidNumberCollectionSearchStringEncodeCurlCommand = `curl -s -u ${username}:$password '$query_uri'`;
